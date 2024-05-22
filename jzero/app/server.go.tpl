@@ -16,7 +16,6 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 
 	"{{ .Module }}/app/internal/config"
-	"{{ .Module }}/app/internal/handler"
 	"{{ .Module }}/app/internal/svc"
 	"{{ .Module }}/app/middlewares"
 )
@@ -46,9 +45,6 @@ func start(ctx *svc.ServiceContext) {
 
 	gw.Use(middlewares.WrapResponse)
 	httpx.SetErrorHandler(middlewares.ErrorHandler)
-
-    // gw add api routes
-    handler.RegisterHandlers(gw.Server, ctx)
 
     // gw add swagger routes. If you do not want it, you can delete this line
     swaggerv2.RegisterRoutes(gw.Server)
