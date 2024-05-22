@@ -10,9 +10,13 @@ import (
 	"github.com/zeromicro/go-zero/core/conf"
     "github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
+	"github.com/jzero-io/jzero-contrib/swaggerv2"
 	"github.com/zeromicro/go-zero/core/syncx"
+	"github.com/zeromicro/go-zero/gateway"
+	"github.com/zeromicro/go-zero/rest/httpx"
 
 	"{{ .Module }}/app/internal/config"
+	"{{ .Module }}/app/internal/handler"
 	"{{ .Module }}/app/internal/svc"
 	"{{ .Module }}/app/middlewares"
 )
@@ -38,11 +42,28 @@ func start(ctx *svc.ServiceContext) {
 	middlewares.RateLimit = syncx.NewLimit(ctx.Config.Zrpc.MaxConns)
 	s.AddUnaryInterceptors(middlewares.GrpcRateLimitInterceptors)
 
+	gw := gateway.MustNewServer(ctx.Config.Gateway.GatewayConf)
+
+	gw.Use(middlewares.WrapResponse)
+	httpx.SetErrorHandler(middlewares.ErrorHandler)
+
+    // gw add api routes
+    handler.RegisterHandlers(gw.Server, ctx)
+
+    // gw add swagger routes. If you do not want it, you can delete this line
+    swaggerv2.RegisterRoutes(gw.Server)
+
+	// gw add routes
+    // You can use gw.Server.AddRoutes() to add your own handler
+    // for example: add a func handler.RegisterMyHandlers() in this line on handler dir
+
 	group := service.NewServiceGroup()
 	group.Add(s)
+	group.Add(gw)
 
 	go func() {
 		fmt.Printf("Starting rpc server at %s...\n", ctx.Config.Zrpc.ListenOn)
+		fmt.Printf("Starting gateway server at %s:%d...\n", ctx.Config.Gateway.Host, ctx.Config.Gateway.Port)
 		group.Start()
 	}()
 
@@ -50,14 +71,13 @@ func start(ctx *svc.ServiceContext) {
 }
 
 func signalHandler(serviceGroup *service.ServiceGroup) {
-	// signal handler
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		s := <-c
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			fmt.Println("Waiting 1 second...\nStopping rpc server")
+			fmt.Println("Waiting 1 second...\nStopping rpc server and gateway server")
 			time.Sleep(time.Second)
 			serviceGroup.Stop()
 			return
