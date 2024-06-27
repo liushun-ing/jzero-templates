@@ -45,7 +45,6 @@ func start(ctx *svc.ServiceContext) {
 
 	// gw add routes
     // You can use gw.Server.AddRoutes() to add your own handler
-    // for example: add a func handler.RegisterMyHandlers() in this line on handler dir
 
 	group := service.NewServiceGroup()
 	group.Add(s)
