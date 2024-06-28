@@ -10,6 +10,7 @@ import (
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/gateway"
 	"{{ .Module }}/internal/config"
+	"{{ .Module }}/internal/middlewares"
 	"{{ .Module }}/internal/svc"
 	"{{ .Module }}/internal/server"
 )
@@ -38,6 +39,7 @@ func Start(cfgFile string) {
 
 func start(ctx *svc.ServiceContext) {
 	s := server.RegisterZrpc(ctx.Config, ctx)
+	s.AddUnaryInterceptors(middlewares.ServerValidationUnaryInterceptor)
 	gw := gateway.MustNewServer(ctx.Config.Gateway.GatewayConf)
 
     // gw add swagger routes. If you do not want it, you can delete this line
