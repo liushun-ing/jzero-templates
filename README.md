@@ -1,7 +1,7 @@
 # templates
 
-jzero template repo with only rpc project
+jzero template repo with gateway project
 
 ```shell
-jzero new simplerpc --branch rpc
+jzero new simplegateway --branch gateway
 ```
