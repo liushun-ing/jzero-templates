@@ -6,6 +6,8 @@ import (
     "github.com/zeromicro/go-zero/zrpc"
 )
 
+var C Config
+
 type Config struct {
 	Zrpc    ZrpcConf
 	Gateway GatewayConf

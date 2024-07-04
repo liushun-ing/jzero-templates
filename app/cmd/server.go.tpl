@@ -29,6 +29,8 @@ var serverCmd = &cobra.Command{
 func Start(cfgFile string) {
 	var c config.Config
 	conf.MustLoad(cfgFile, &c)
+	config.C = c
+
     // set up logger
     if err := logx.SetUp(c.Log.LogConf); err != nil {
         logx.Must(err)
