@@ -10,6 +10,8 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/gateway"
+	"golang.org/x/sync/errgroup"
+	"{{ .Module }}/internal/custom"
 	"{{ .Module }}/internal/config"
 	"{{ .Module }}/internal/middlewares"
 	"{{ .Module }}/internal/svc"
@@ -31,11 +33,11 @@ func Start(cfgFile string) {
 	conf.MustLoad(cfgFile, &c)
 	config.C = c
 
-    // set up logger
-    if err := logx.SetUp(c.Log.LogConf); err != nil {
-        logx.Must(err)
-    }
-    logtoconsole.Must(c.Log.LogConf)
+	// set up logger
+	if err := logx.SetUp(c.Log.LogConf); err != nil {
+		logx.Must(err)
+	}
+	logtoconsole.Must(c.Log.LogConf)
 
 	ctx := svc.NewServiceContext(c)
 	start(ctx)
@@ -46,20 +48,40 @@ func start(ctx *svc.ServiceContext) {
 	s.AddUnaryInterceptors(middlewares.ServerValidationUnaryInterceptor)
 	gw := gateway.MustNewServer(ctx.Config.Gateway.GatewayConf)
 
-    // gw add swagger routes. If you do not want it, you can delete this line
-    swaggerv2.RegisterRoutes(gw.Server)
+	// gw add swagger routes. If you do not want it, you can delete this line
+	swaggerv2.RegisterRoutes(gw.Server)
 
 	// gw add routes
-    // You can use gw.Server.AddRoutes() to add your own handler
+	// You can use gw.Server.AddRoutes() to add your own handler
 
 	group := service.NewServiceGroup()
 	group.Add(s)
 	group.Add(gw)
 
-    fmt.Printf("Starting rpc server at %s...\n", ctx.Config.Zrpc.ListenOn)
-	fmt.Printf("Starting gateway server at %s:%d...\n", ctx.Config.Gateway.Host, ctx.Config.Gateway.Port)
-	group.Start()
+	// shutdown listener
+	waitForCalled := proc.AddShutdownListener(exit)
 
+	eg := errgroup.Group{}
+	eg.Go(func() error {
+		fmt.Printf("Starting rpc server at %s...\n", ctx.Config.Zrpc.ListenOn)
+		fmt.Printf("Starting gateway server at %s:%d...\n", ctx.Config.Gateway.Host, ctx.Config.Gateway.Port)
+		group.Start()
+		return nil
+	})
+
+	eg.Go(func() error {
+		custom.Do()
+		return nil
+	})
+
+	if err := eg.Wait(); err != nil {
+		panic(err)
+	}
+	waitForCalled()
+}
+
+func exit() {
+	fmt.Println("=================exit=================")
 }
 
 func init() {
