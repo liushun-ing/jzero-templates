@@ -45,22 +45,23 @@ func Start(cfgFile string) {
 }
 
 func start(ctx *svc.ServiceContext) {
-	s := server.RegisterZrpc(ctx.Config, ctx)
-	s.AddUnaryInterceptors(middlewares.ServerValidationUnaryInterceptor)
+	zrpc := server.RegisterZrpc(ctx.Config, ctx)
+	middlewares.RegisterGrpc(zrpc)
+
 	gw := gateway.MustNewServer(ctx.Config.Gateway.GatewayConf)
+	middlewares.RegisterGateway(gw)
 
 	// gw add swagger routes. If you do not want it, you can delete this line
 	swaggerv2.RegisterRoutes(gw.Server)
-
 	// gw add routes
 	// You can use gw.Server.AddRoutes() to add your own handler
 
 	group := service.NewServiceGroup()
-	group.Add(s)
+	group.Add(zrpc)
 	group.Add(gw)
 
 	// shutdown listener
-	waitForCalled := proc.AddShutdownListener(exit)
+	wailExit := proc.AddShutdownListener(exit)
 
 	eg := errgroup.Group{}
 	eg.Go(func() error {
@@ -70,6 +71,7 @@ func start(ctx *svc.ServiceContext) {
 		return nil
 	})
 
+	// add your custom logic in custom.Do()
 	eg.Go(func() error {
 		custom.Do()
 		return nil
@@ -78,12 +80,12 @@ func start(ctx *svc.ServiceContext) {
 	if err := eg.Wait(); err != nil {
 		panic(err)
 	}
-	waitForCalled()
+
+	wailExit()
 }
 
-func exit() {
-	fmt.Println("=================exit=================")
-}
+// exit Please add shut down logic here.
+func exit() {}
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
