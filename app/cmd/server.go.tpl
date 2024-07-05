@@ -44,11 +44,11 @@ func Start(cfgFile string) {
 	start(ctx)
 }
 
-func start(ctx *svc.ServiceContext) {
-	zrpc := server.RegisterZrpc(ctx.Config, ctx)
+func start(svcCtx *svc.ServiceContext) {
+	zrpc := server.RegisterZrpc(svcCtx.Config, svcCtx)
 	middlewares.RegisterGrpc(zrpc)
 
-	gw := gateway.MustNewServer(ctx.Config.Gateway.GatewayConf)
+	gw := gateway.MustNewServer(svcCtx.Config.Gateway.GatewayConf)
 	middlewares.RegisterGateway(gw)
 
 	// gw add swagger routes. If you do not want it, you can delete this line
@@ -61,19 +61,19 @@ func start(ctx *svc.ServiceContext) {
 	group.Add(gw)
 
 	// shutdown listener
-	wailExit := proc.AddShutdownListener(exit)
+	wailExit := proc.AddShutdownListener(svcCtx.Custom.Stop)
 
 	eg := errgroup.Group{}
 	eg.Go(func() error {
-		fmt.Printf("Starting rpc server at %s...\n", ctx.Config.Zrpc.ListenOn)
-		fmt.Printf("Starting gateway server at %s:%d...\n", ctx.Config.Gateway.Host, ctx.Config.Gateway.Port)
+		fmt.Printf("Starting rpc server at %s...\n", svcCtx.Config.Zrpc.ListenOn)
+		fmt.Printf("Starting gateway server at %s:%d...\n", svcCtx.Config.Gateway.Host, svcCtx.Config.Gateway.Port)
 		group.Start()
 		return nil
 	})
 
 	// add your custom logic in custom.Do()
 	eg.Go(func() error {
-		custom.Do()
+		svcCtx.Custom.Start()
 		return nil
 	})
 
@@ -83,9 +83,6 @@ func start(ctx *svc.ServiceContext) {
 
 	wailExit()
 }
-
-// exit Please add shut down logic here.
-func exit() {}
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
