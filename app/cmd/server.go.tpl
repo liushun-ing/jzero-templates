@@ -10,6 +10,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/gateway"
+	"github.com/zeromicro/go-zero/core/proc"
 	"golang.org/x/sync/errgroup"
 	"{{ .Module }}/internal/custom"
 	"{{ .Module }}/internal/config"
