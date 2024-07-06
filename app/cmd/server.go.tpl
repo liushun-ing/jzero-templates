@@ -3,6 +3,7 @@ package cmd
 import (
     "fmt"
 
+	"github.com/common-nighthawk/go-figure"
 	"github.com/jzero-io/jzero-contrib/logtoconsole"
 	"github.com/jzero-io/jzero-contrib/swaggerv2"
 	"github.com/spf13/cobra"
@@ -53,24 +54,25 @@ func start(svcCtx *svc.ServiceContext) {
 	// gw add swagger routes. If you do not want it, you can delete this line
 	swaggerv2.RegisterRoutes(gw.Server)
 	// gw add routes
-	// You can use gw.Server.AddRoutes() to add your own handler
+	// You can use gw.Server.AddRoutes()
 
 	group := service.NewServiceGroup()
 	group.Add(zrpc)
 	group.Add(gw)
 
 	// shutdown listener
-	wailExit := proc.AddShutdownListener(svcCtx.Custom.Stop)
+	waitExit := proc.AddShutdownListener(svcCtx.Custom.Stop)
 
 	eg := errgroup.Group{}
 	eg.Go(func() error {
+	    printBanner(svcCtx.Config)
 		fmt.Printf("Starting rpc server at %s...\n", svcCtx.Config.Zrpc.ListenOn)
 		fmt.Printf("Starting gateway server at %s:%d...\n", svcCtx.Config.Gateway.Host, svcCtx.Config.Gateway.Port)
 		group.Start()
 		return nil
 	})
 
-	// add your custom logic in custom.Do()
+	// add custom start logic
 	eg.Go(func() error {
 		svcCtx.Custom.Start()
 		return nil
@@ -80,7 +82,11 @@ func start(svcCtx *svc.ServiceContext) {
 		panic(err)
 	}
 
-	wailExit()
+	waitExit()
+}
+
+func printBanner(c config.Config) {
+	figure.NewColorFigure(c.Banner.Text, c.Banner.FontName, c.Banner.Color, true).Print()
 }
 
 func init() {

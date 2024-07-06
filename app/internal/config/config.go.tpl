@@ -12,6 +12,8 @@ type Config struct {
 	Zrpc    ZrpcConf
 	Gateway GatewayConf
 	Log     LogConf
+
+	Banner BannerConf
 }
 
 type ZrpcConf struct {
@@ -24,4 +26,10 @@ type GatewayConf struct {
 
 type LogConf struct {
 	logx.LogConf
+}
+
+type BannerConf struct {
+	Text     string `json:",default=JZERO"`
+	Color    string `json:",default=green"`
+	FontName string `json:",default=starwars,options=big|larry3d|starwars|standard"`
 }
