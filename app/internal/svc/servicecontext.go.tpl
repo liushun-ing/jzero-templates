@@ -1,8 +1,8 @@
 package svc
 
 import (
-	"simplegateway/internal/config"
-	"simplegateway/internal/custom"
+	"{{ .Module }}/internal/config"
+	"{{ .Module }}/internal/custom"
 )
 
 type ServiceContext struct {
