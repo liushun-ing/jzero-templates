@@ -1,8 +1,17 @@
 ORGANIZATION = "organization"
 APP = "{{ .APP }}"
-VERSION = $(shell git describe --tags --always --match='v*')
+
+VERSION := $(shell git describe --tags --always --match='v*' 2>/dev/null)
+ifeq ($(VERSION),)
+    VERSION = "latest"
+endif
+
+COMMIT = $(shell git rev-parse --short HEAD 2>/dev/null)
+ifeq ($(COMMIT),)
+    COMMIT = ""
+endif
+
 DATE = `date "+%Y-%m-%d %H:%M:%S"`
-COMMIT = `git rev-parse --short HEAD`
 ARCH = `go env GOARCH`
 
 .PHONY: build
