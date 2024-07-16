@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/zeromicro/go-zero/gateway"
 	"github.com/zeromicro/go-zero/zrpc"
-	"net/http"
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 func RegisterGrpc(z *zrpc.RpcServer) {
@@ -11,9 +11,6 @@ func RegisterGrpc(z *zrpc.RpcServer) {
 }
 
 func RegisterGateway(g *gateway.Server) {
-	g.Use(func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			next.ServeHTTP(w, r)
-		}
-	})
+    httpx.SetErrorHandler(ErrorHandler)
+    g.Use(ResponseHandler)
 }
