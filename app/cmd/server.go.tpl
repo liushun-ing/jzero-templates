@@ -1,9 +1,8 @@
 package cmd
 
 import (
-    "fmt"
-
 	"github.com/common-nighthawk/go-figure"
+	"github.com/jzero-io/jzero-contrib/gwx"
 	"github.com/jzero-io/jzero-contrib/logtoconsole"
 	"github.com/jzero-io/jzero-contrib/swaggerv2"
 	"github.com/spf13/cobra"
@@ -13,6 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/gateway"
 	"github.com/zeromicro/go-zero/core/proc"
 	"golang.org/x/sync/errgroup"
+	"{{ .Module }}/desc/pb"
 	"{{ .Module }}/internal/config"
 	"{{ .Module }}/internal/middlewares"
 	"{{ .Module }}/internal/svc"
@@ -34,8 +34,15 @@ func Start(cfgFile string) {
 	conf.MustLoad(cfgFile, &c)
 	config.C = c
 
+	// write pb to local
+    var err error
+    c.Gateway.Upstreams[0].ProtoSets, err = gwx.WritePbToLocal(pb.Embed)
+    if err != nil {
+    	logx.Must(err)
+    }
+
 	// set up logger
-	if err := logx.SetUp(c.Log.LogConf); err != nil {
+	if err = logx.SetUp(c.Log.LogConf); err != nil {
 		logx.Must(err)
 	}
 	logtoconsole.Must(c.Log.LogConf)
@@ -66,8 +73,8 @@ func start(svcCtx *svc.ServiceContext) {
 	eg := errgroup.Group{}
 	eg.Go(func() error {
 	    printBanner(svcCtx.Config)
-		fmt.Printf("Starting rpc server at %s...\n", svcCtx.Config.Zrpc.ListenOn)
-		fmt.Printf("Starting gateway server at %s:%d...\n", svcCtx.Config.Gateway.Host, svcCtx.Config.Gateway.Port)
+	    logx.Infof("Starting rpc server at %s...", svcCtx.Config.Zrpc.ListenOn)
+		logx.Infof("Starting gateway server at %s:%d...", svcCtx.Config.Gateway.Host, svcCtx.Config.Gateway.Port)
 		group.Start()
 		return nil
 	})
