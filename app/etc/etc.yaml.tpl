@@ -10,8 +10,6 @@ gateway:
         endpoints:
           - 0.0.0.0:8000
       name: {{ .APP }}.gw
-      protoSets:
-        - desc/proto/v1/hello.pb
 
 log:
   encoding: plain
