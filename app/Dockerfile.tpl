@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/go/pkg CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARC
     && jzero gen swagger \
     && cp -r etc /dist/etc \
     && mkdir -p /dist/desc && cp -r desc/swagger /dist/desc \
-    && find desc/proto -type f -name '*.pb' | while read file; do mkdir -p /dist/$(dirname $file) && cp $file /dist/$file; done
+    && cp -r desc/pb /dist/desc
 
 
 FROM --platform=$TARGETPLATFORM alpine:latest
