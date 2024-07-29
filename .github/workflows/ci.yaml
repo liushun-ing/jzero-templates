@@ -30,7 +30,7 @@ jobs:
           GITHUB_TOKEN=${{ secrets.ACCESS_TOKEN }} grum clone https://github.com/jzero-io/examples
           cd examples
           rm -rf simplegateway
-          jzero new simplegateway --branch rpc
+          jzero new simplegateway --branch gateway
           cd simplegateway
           jzero gen
           jzero gen sdk
