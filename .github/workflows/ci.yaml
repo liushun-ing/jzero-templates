@@ -1,0 +1,29 @@
+name: jzero-ci
+
+on:
+  push:
+    branches:
+  pull_request:
+
+jobs:
+  golangci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.22.3'
+
+      - name: Test Usage
+        run: |
+          go install github.com/jzero-io/jzero@main
+          jzero check
+          jzero new simplerpc --branch rpc
+          cd simplerpc && jzero gen && go mod tidy && go run main.go version
+          jzero gen zrpcclient
+          cd ..
