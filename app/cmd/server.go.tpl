@@ -12,7 +12,7 @@ import (
 	"github.com/common-nighthawk/go-figure"
 
 	"{{ .Module }}/internal/config"
-	"{{ .Module }}/internal/middlewares"
+	"{{ .Module }}/internal/middleware"
 	"{{ .Module }}/internal/server"
 	"{{ .Module }}/internal/svc"
 )
@@ -45,11 +45,11 @@ func Start(cfgFile string) {
 }
 
 func start(svcCtx *svc.ServiceContext) {
-	s := server.RegisterZrpc(svcCtx.Config, svcCtx)
-    s.AddUnaryInterceptors(middlewares.ServerValidationUnaryInterceptor)
+	zrpc := server.RegisterZrpc(svcCtx.Config, svcCtx)
+    middleware.RegisterZrpc(zrpc)
 
 	group := service.NewServiceGroup()
-	group.Add(s)
+	group.Add(zrpc)
 
     // shutdown listener
 	waitExit := proc.AddShutdownListener(svcCtx.Custom.Stop)
