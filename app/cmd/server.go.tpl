@@ -15,7 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"{{ .Module }}/desc/pb"
 	"{{ .Module }}/internal/config"
-	"{{ .Module }}/internal/middlewares"
+	"{{ .Module }}/internal/middleware"
 	"{{ .Module }}/internal/svc"
 	"{{ .Module }}/internal/server"
 )
@@ -56,10 +56,10 @@ func Start(cfgFile string) {
 
 func start(svcCtx *svc.ServiceContext) {
 	zrpc := server.RegisterZrpc(svcCtx.Config, svcCtx)
-	middlewares.RegisterZrpc(zrpc)
+	middleware.RegisterZrpc(zrpc)
 
 	gw := gateway.MustNewServer(svcCtx.Config.Gateway.GatewayConf)
-	middlewares.RegisterGateway(gw)
+	middleware.RegisterGateway(gw)
 
 	// gw add swagger routes. If you do not want it, you can delete this line
 	swaggerv2.RegisterRoutes(gw.Server)
