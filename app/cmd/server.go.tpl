@@ -60,7 +60,7 @@ func start(svcCtx *svc.ServiceContext) {
 	gw := gateway.MustNewServer(svcCtx.Config.Gateway.GatewayConf, middleware.WithHeaderProcessor())
 	middleware.RegisterGateway(gw)
 
-    // gw add custom routes. If you do not want it, you can delete this line
+    // gw add custom routes
     svcCtx.Custom.AddRoutes(gw)
 
 	group := service.NewServiceGroup()
