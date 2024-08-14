@@ -55,10 +55,10 @@ func Start(cfgFile string) {
 
 func start(svcCtx *svc.ServiceContext) {
 	zrpc := server.RegisterZrpc(svcCtx.Config, svcCtx)
-	middleware.RegisterZrpc(zrpc)
-
 	gw := gateway.MustNewServer(svcCtx.Config.Gateway.GatewayConf, middleware.WithHeaderProcessor())
-	middleware.RegisterGateway(gw)
+
+	// register middleware
+	middleware.Register(zrpc, gw)
 
     // gw add custom routes
     svcCtx.Custom.AddRoutes(gw)
