@@ -59,7 +59,7 @@ func start(svcCtx *svc.ServiceContext) {
 	group.Add(server)
 
 	// shutdown listener
-    wailExit := proc.AddShutdownListener(svcCtx.Custom.Stop)
+    waitExit := proc.AddShutdownListener(svcCtx.Custom.Stop)
 
     eg := errgroup.Group{}
     eg.Go(func() error {
@@ -79,7 +79,7 @@ func start(svcCtx *svc.ServiceContext) {
     	panic(err)
     }
 
-    wailExit()
+    waitExit()
 }
 
 func printBanner(c config.Config) {
