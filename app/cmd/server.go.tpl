@@ -7,7 +7,6 @@ import (
 	"github.com/zeromicro/go-zero/core/conf"
     "github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
-	"github.com/jzero-io/jzero-contrib/swaggerv2"
 	"github.com/zeromicro/go-zero/rest"
 	"github.com/zeromicro/go-zero/core/proc"
 	"github.com/common-nighthawk/go-figure"
@@ -54,7 +53,7 @@ func start(svcCtx *svc.ServiceContext) {
 	handler.RegisterHandlers(server, svcCtx)
 
 	// server add custom routes
-    swaggerv2.RegisterRoutes(server)
+    svcCtx.Custom.AddRoutes(server)
 
 	group := service.NewServiceGroup()
 	group.Add(server)
